@@ -1,4 +1,5 @@
 #advent of code day 1
+#Patrick Johnson 2019
 #read csv into array of numbers
 #process numbers into required fuel (floor(Mass / 3) - 2)
 #sum required fuel
