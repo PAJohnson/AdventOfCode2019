@@ -15,35 +15,39 @@ def arrayParse(fileName):
 	f.close()
 	return data
 
-def opInterpret(opcodes):
-	#opcodes is a list of instructions
+def computer(memory):
+	#mem is a list of instructions
 	#this function runs through each instruction
-	newOps = opcodes.copy()
-	index = 0
+	#add new instructions to the if/elif tree
+	mem = memory.copy()
+	ip = 0
 	halt = 0
-	while index < len(newOps) and halt == 0:
+	while ip < len(mem) and halt == 0:
 		#interpretation
-		if newOps[index] == 1:
+		if mem[ip] == 1:
 			#add
-			newOps[newOps[index+3]] = newOps[newOps[index+1]] + newOps[newOps[index+2]]
+			mem[mem[ip+3]] = mem[mem[ip+1]] + mem[mem[ip+2]]
 			#('adding!')
-		elif newOps[index] == 2:
+			ip = ip + 4
+		elif mem[ip] == 2:
 			#multiply
-			newOps[newOps[index+3]] = newOps[newOps[index+1]] * newOps[newOps[index+2]]
+			mem[mem[ip+3]] = mem[mem[ip+1]] * mem[mem[ip+2]]
 			#print('multiplying!')
-		elif newOps[index] == 99:
+			ip = ip + 4
+		elif mem[ip] == 99:
 			#halt
 			halt = 1
 			#print('halting!')
+			index = ip + 1
 		else:
 			#error
 			halt = 1
 			#print('unrecognized opcode')
 		
-		index = index + 4
+		
 		#print(index)
 	
-	return newOps
+	return mem
 	
 def findNV(opcodes,key):
 	noun = 0
@@ -55,7 +59,7 @@ def findNV(opcodes,key):
 			newOps = opcodes.copy()
 			newOps[1] = noun
 			newOps[2] = verb
-			result = opInterpret(newOps)
+			result = computer(newOps)
 			if result[0] == key:
 				print('Found!')
 				answer = 100*noun + verb
@@ -69,7 +73,7 @@ opcodes = arrayParse('input.txt')
 #do the replacement as described in problem
 opcodes[1] = 12
 opcodes[2] = 2
-result = opInterpret(opcodes)
+result = computer(opcodes)
 print(result[0])
 
 #part 2!
