@@ -3,24 +3,6 @@
 
 from itertools import permutations 
 
-haltList = []
-
-class Signal:
-	def __init__(self):
-		self.signal = None
-		self.set = False
-		
-	def get(self):
-		self.set = False
-		return self.signal
-		
-	def set(self,signal):
-		self.signal = signal
-		self.set = True
-		
-	def isSet(self):
-		return self.set
-
 def arrayParse(fileName):
 	data = []
 
@@ -197,7 +179,6 @@ class intCodeComp:
 			else:
 				#error
 				self.halt = 1
-				#print('unrecognized opcode')
 			
 
 
