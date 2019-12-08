@@ -14,7 +14,7 @@ def arrayParse(fileName):
 def getDigit(number, place):
 	return number // 10**place % 10
 
-def computer(memory):
+def computer(memory,inList):
 	#mem is a list of instructions
 	#this function runs through each instruction
 	#add new instructions to the if/elif tree
@@ -22,6 +22,8 @@ def computer(memory):
 	mem = memory.copy()
 	ip = 0
 	halt = 0
+	inPtr = 0
+	out = 0
 	while ip < len(mem) and halt == 0:
 		#print("at position: " + str(ip))
 		#1 op, 3 params
@@ -62,13 +64,15 @@ def computer(memory):
 		elif getDigit(mem[ip],0) == 3:
 			#prompt for input, store
 			print("Input: ")
-			val = int(input())
+			val = inList[inPtr]
+			inPtr += 1
 			mem[mem[ip+1]] = val
 			ip = ip + 2
 			
 		elif getDigit(mem[ip],0) == 4:
 			#outputs value of parameter
 			print(mem[mem[ip+1]])
+			out = mem[mem[ip+1]]
 			ip = ip + 2
 			
 		elif getDigit(mem[ip],0) == 5:
