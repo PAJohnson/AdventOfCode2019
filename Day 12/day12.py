@@ -8,14 +8,29 @@
 #Io, Europa, Ganymede, Callisto
 
 from dataclasses import dataclass
+import matplotlib.pyplot as plt
+from itertools import permutations, combinations
 
+
+def gcd(a,b):
+    """Compute the greatest common divisor of a and b"""
+    while b > 0:
+        a, b = b, a % b
+    return a
+    
+def lcm(a, b):
+    """Compute the lowest common multiple of a and b"""
+    return a * b / gcd(a, b)
+    
+    
+#refactor later! too hard.
 class Moon():
 	
-	def __init__(self,x,y,z):
+	def __init__(self,pos):
 		#init moon with position
-		self.xp = x
-		self.yp = y
-		self.zp = z
+		self.xp = pos[0]
+		self.yp = pos[1]
+		self.zp = pos[2]
 		self.xv = 0
 		self.yv = 0
 		self.zv = 0		
@@ -42,29 +57,20 @@ def updatePos(moon):
 	moon.yp += moon.yv
 	moon.zp += moon.zv
 	
-def motionSim(moon1, moon2, moon3, moon4):
+def motionSim(m):
 	#update velocities
-	updateVel(moon1,moon2)
-	updateVel(moon1,moon3)
-	updateVel(moon1,moon4)
-	updateVel(moon2,moon3)
-	updateVel(moon2,moon4)
-	updateVel(moon3,moon4)
+	perm = combinations([0,1,2,3],2)
+	for p in list(perm):
+		updateVel(m[p[0]],m[p[1]])
+	for moon in m:
+		updatePos(moon)
 	
-	updatePos(moon1)
-	updatePos(moon2)
-	updatePos(moon3)
-	updatePos(moon4)
-	
-def motionSteps(m1,m2,m3,m4,steps,printDes):
+def motionSteps(m,steps,printDes):
 	for i in range(steps):
 		if printDes:
 			print("Time step " + str(i))
-			printMoon(m1)
-			printMoon(m2)
-			printMoon(m3)
-			printMoon(m4)
-		motionSim(m1,m2,m3,m4)
+			printMoon(m)
+		motionSim(m)
 		
 def moonEnergy(moon):
 	pot = abs(moon.xp) + abs(moon.yp) + abs(moon.zp)
@@ -72,21 +78,99 @@ def moonEnergy(moon):
 	print("%s, %s" % (pot,kin))
 	return pot*kin
 	
-def totalEnergy(m1,m2,m3,m4):
-	return (moonEnergy(m1) + moonEnergy(m2) + moonEnergy(m3) + moonEnergy(m4))
+def totalEnergy(m):
+	energy = sum([moonEnergy(moon) for moon in m])
+	return energy
 	
-	
-m1 = Moon(1,2,-9)
-m2 = Moon(-1,-9,-4)
-m3 = Moon(17,6,8)
-m4 = Moon(12,4,2)
+def parseInput(filename):
+	f = open(filename)
+	lines = []
+	line = []
+	init = []
+	for row in f:
+		lines = row.strip().strip('<').strip('>').split(', ')
+		lines[0] = int(lines[0].strip('x').strip('='))
+		lines[1] = int(lines[1].strip('y').strip('='))
+		lines[2] = int(lines[2].strip('z').strip('='))
+		init.append(lines)
+		
+	m1 = [init[0][0],init[0][1],init[0][2]]
+	m2 = [init[1][0],init[1][1],init[1][2]]
+	m3 = [init[2][0],init[2][1],init[2][2]]
+	m4 = [init[3][0],init[3][1],init[3][2]]
+	return [m1,m2,m3,m4]
+		
+def matchPos(m,pos,dim):
+	true = []
+	if dim == 'x':
+		for i in range(len(m)):
+			if m[i].xp == pos[i].xp:
+				true.append(1)
+			else:
+				true.append(0)
+		if sum(true) == 4:
+			return True
+	elif dim == 'y':
+		for i in range(len(m)):
+			if m[i].yp == pos[i].yp:
+				true.append(1)
+			else:
+				true.append(0)
+		if sum(true) == 4:
+			return True
+	elif dim == 'z':
+		for i in range(len(m)):
+			if m[i].zp == pos[i].zp:
+				true.append(1)
+			else:
+				true.append(0)
+		if sum(true) == 4:
+			return True	
+	else:
+		return False
+		
+def findPeriod(m,start):
+	count = 0
+	found = [False,False,False]
+	target = [True,True,True]
+	period = [0,0,0]
+	while target != found:
+		#search for matches
+		count += 1
+		motionSim(m)
+		if matchPos(m,start,'x') == True and found[0] == False:
+			found[0] = True
+			period[0] = count
+			print("found x: " + str(count))
+		if matchPos(m,start,'y') == True and found[1] == False:
+			found[1] = True
+			period[1] = count
+			print("found y: " + str(count))
+		if matchPos(m,start,'z') == True and found[2] == False:
+			found[2] = True
+			period[2] = count
+			print("found z: " + str(count))
+	return lcm(period[0]+1, lcm(period[1]+1, period[2]+1))
+
 #part 1
-motionSteps(m1,m2,m3,m4,1000,False)
-print(totalEnergy(m1,m2,m3,m4))
+start = parseInput('input.txt')
+m = []
+stm = []
+for st in start:
+	m.append(Moon(st))
+	stm.append(Moon(st))
+
+#hist = motionSteps(m,100,False)
+#print(totalEnergy(m))
 
 #part 2
 #find how many steps it takes before universe repeats itself!
 #number of steps before positions and velocities exactly match
 #need to find a smarter way to calculate moonUpdate...
 #can be directly calculate oscillation period?
-
+#look at the data
+#oscillations are not the way to go
+#how to do this without a time history and comparing them?
+#if orbit is periodic, will it always return to the initial state?
+#assume initial state is dynamically stable
+print(findPeriod(m,stm))
